@@ -40,11 +40,11 @@ public abstract class AutoMaster extends LinearOpMode {
 
     public static double x_axis = 1300, side_eject_y = 224;
 
-    public static double right_high_y = 760, right_high_x = 1490, right_high_heading = 135;
+    public static double right_high_y = 770, right_high_x = 1510, right_high_heading = 135;
 
     public static double itm_pos_X = 1360, itm_pos_y = 900, itm_pos_heading = 93;
 
-    public static double grab_pos_y = 1420;
+    public static double grab_pos_y = 1417;
 
     private PYZMecanumDrive drive;
     private XCYSuperStructure upper;
@@ -100,7 +100,6 @@ public abstract class AutoMaster extends LinearOpMode {
 
         startPos = new Pose2d(0, 900 * startSide, Math.toRadians(180) * startSide);
 
-
         end_pos_index = 0;
         FtcDashboard.getInstance().startCameraStream(webcam, 10);
         telemetry.update();
@@ -118,8 +117,6 @@ public abstract class AutoMaster extends LinearOpMode {
                 this,
                 drive::update
         );
-        upper.closeHand();
-        upper.setArm(0.5);
         upper.setSideIsRed(side_color);
         telemetry.addLine("init: trajectory");
         telemetry.update();
@@ -129,13 +126,11 @@ public abstract class AutoMaster extends LinearOpMode {
                     .splineToSplineHeading(new Pose2d(x_axis, 560 * startSide, Math.toRadians(90) * startSide), Math.toRadians(90) * startSide)
                     .splineToSplineHeading(MIDDLE_POS, MIDDLE_POS.getHeading())
                     .build();
-        } else if (firstJunctionPos == Junction.RIGHT) {//TODO
+        } else if (firstJunctionPos == Junction.RIGHT) {
             startToEject = drive.trajectoryBuilder(startPos, true)
-                    .splineToLinearHeading(new Pose2d(1000, 900 * startSide, Math.toRadians(180) * startSide), 0)
+                    .splineToLinearHeading(new Pose2d(800, 900 * startSide, Math.toRadians(180) * startSide), 0)
+                    .addDisplacementMarker(()->upper.toHighJunction())
                     .splineToSplineHeading(RIGHT_POS, AngleUnit.normalizeRadians(RIGHT_POS.getHeading() - Math.PI))
-//                 .lineToConstantHeading(new Vector2d(800,900))
-//                 .lineToSplineHeading(new Pose2d(1200,900*startSide,Math.toRadians(150)*startSide))
-//                 .splineToLinearHeading(RIGHT_POS,RIGHT_POS.getHeading())
                     .build();
         } else {
             startToEject = drive.trajectoryBuilder(startPos)
@@ -147,7 +142,6 @@ public abstract class AutoMaster extends LinearOpMode {
         runtime = new ElapsedTime();
         runtime.reset();
         sleep(400);
-        upper.closeHand();
         while (!opModeIsActive()) {
             int id = pipeline.getId();
             end_pos_index = id == 0 ? end_pos_index : id;
@@ -161,6 +155,8 @@ public abstract class AutoMaster extends LinearOpMode {
         }
         waitForStart();
         runtime.reset();
+        upper.closeHand();
+        upper.setArm(0.5);
 //      webcam.closeCameraDeviceAsync(() -> {
 //      });
     }
@@ -173,7 +169,7 @@ public abstract class AutoMaster extends LinearOpMode {
 //      drive.moveForTime(100);
         drive.followTrajectoryAsync(startToEject);
         if (firstJunctionPos == Junction.MIDDLE) {
-            while (opModeIsActive() && Math.abs(drive.getPoseEstimate().getY() - MIDDLE_POS.getY()) > 150) {
+            while (opModeIsActive() && Math.abs(drive.getPoseEstimate().getY() - MIDDLE_POS.getY()) > 170) {
                 drive.update();
             }
             upper.toHighJunction();
@@ -181,15 +177,16 @@ public abstract class AutoMaster extends LinearOpMode {
             drive.initSimpleMove(MIDDLE_POS);
             drive.waitForIdle();
         } else if (firstJunctionPos == Junction.RIGHT) {
-            while (opModeIsActive() && Math.abs(drive.getPoseEstimate().getX() - RIGHT_POS.getX()) > 500) {
+            drive.waitForIdle();
+//            drive.initSimpleMove(RIGHT_POS);
+            drive.initSimpleMove(new Pose2d(x_axis,RIGHT_POS.getY(),Math.toRadians(90)*startSide));
+            while (Math.abs(drive.getPoseEstimate().getX())<1000){
                 drive.update();
             }
-            upper.toHighJunction();
-            drive.waitForIdle();
             drive.initSimpleMove(RIGHT_POS);
             drive.waitForIdle();
         } else {
-            while (opModeIsActive() && drive.getPoseEstimate().getX() < 900) {
+            while (opModeIsActive() && (drive.getPoseEstimate().getX() < 900)){
                 drive.update();
             }
         }
@@ -206,19 +203,22 @@ public abstract class AutoMaster extends LinearOpMode {
             Intermediate = drive.trajectoryBuilder(RIGHT_POS)
                     .splineToSplineHeading(INTERMEDIATE_POS, AngleUnit.normalizeRadians(INTERMEDIATE_POS.getHeading() - Math.PI))
                     .build();
+            drive.followTrajectoryAsync(Intermediate);
+            upper.toAim(index);
+            drive.waitForIdle();
+            drive.initSimpleMove(INTERMEDIATE_POS);
+            drive.waitForIdle();
         } else if (lastJunction == Junction.GRAB) {
-            Intermediate = drive.trajectoryBuilder(GRAB_POS)
-                    .lineToConstantHeading(new Vector2d(INTERMEDIATE_POS.getX(),INTERMEDIATE_POS.getY()))
-                    .build();
+            upper.closeHand();
+            drive.initSimpleMove(new Pose2d(x_axis,RIGHT_POS.getY(),Math.toRadians(-90)));
+            while (Math.abs(drive.getPoseEstimate().getY()-1000*startSide)>300){
+                drive.update();
+            }
+            drive.initSimpleMove(RIGHT_POS);
+            upper.toHighJunction();
+            drive.waitForIdle();
         }
-        if (isStopRequested()) return;
-        drive.followTrajectoryAsync(Intermediate);
 //        upper.toAim();
-        if(lastJunction==Junction.RIGHT||lastJunction==Junction.MIDDLE) upper.toAim(index);
-        else if(lastJunction==Junction.GRAB)upper.toHighJunction();
-        drive.waitForIdle();
-        drive.initSimpleMove(INTERMEDIATE_POS);
-        drive.waitForIdle();
     }
 
     //到位等待，进行后面动作
@@ -259,18 +259,13 @@ public abstract class AutoMaster extends LinearOpMode {
         if (lastJunction == Junction.RIGHT) {
             drive.initSimpleMove(GRAB_POS);
             drive.waitForIdle();
-            while (opModeIsActive() && drive.isBusy()) {
-                drive.update();
-            }
+            drive.moveForTime(550);
             drive.stopSimpleMove();
-            drive.setDrivePower(new Pose2d(0.12, 0, 0));
-            drive.moveForTime(300);
+            drive.setDrivePower(new Pose2d(0.2, 0, 0));
+            drive.moveForTime(200);
             drive.setDrivePower(new Pose2d(0, 0, 0));
-            upper.closeHand();
-            drive.moveForTime(350);
+            upper.verticalGrab();
 //            intermediate(5,Junction.GRAB);
-            upper.toHighJunction();
-
         }
     }
 //    protected void eject_first(Junction pos, int stable_time) throws Exception {
@@ -291,7 +286,7 @@ public abstract class AutoMaster extends LinearOpMode {
         drive.waitForIdle();
         drive.moveForTime(stable_time);
         upper.armChange(-0.1);
-        drive.moveForTime(150);
+        drive.moveForTime(200);
         upper.openHand();
         drive.moveForTime(100);
         if (runtime.seconds() > 28.5) throw new GlobalTimeoutException();
@@ -321,6 +316,8 @@ public abstract class AutoMaster extends LinearOpMode {
         drive.initSimpleMove(endPos);
         drive.waitForIdle();
         drive.moveForTime(200);
+        upper.toOrigional();
+        drive.moveForTime(300);
     }
 
     protected void savePosition() {

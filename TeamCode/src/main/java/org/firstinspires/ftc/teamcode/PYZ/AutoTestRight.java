@@ -14,15 +14,14 @@ public class AutoTestRight extends AutoMaster{
          initHardware();
          longMoveNormal();
          while(i>0) {
-            eject(Junction.RIGHT, 100);
+            eject(Junction.RIGHT, 300);
             intermediate(i-1, Junction.RIGHT);
             intake(Junction.RIGHT);
             intermediate(5, Junction.GRAB);
             i--;
          }
-         eject(Junction.RIGHT,100);
+         eject(Junction.RIGHT,300);
          park();
-
       } catch (Exception e){
          throw new InterruptedException();
       }

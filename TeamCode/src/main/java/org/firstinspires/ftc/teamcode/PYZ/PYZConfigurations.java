@@ -53,7 +53,7 @@ public class PYZConfigurations {
     public static final double WHEEL_BASE = 270; // mm
 
     public static final double MAX_VEL = 1600;                        // 底盘速度 todo
-    public static final double MAX_ACCEL = 1400;
+    public static final double MAX_ACCEL = 1600;
     public static final double MAX_ANG_VEL = Math.toRadians(100);
     public static double MAX_ANG_ACCEL = Math.toRadians(100);
 

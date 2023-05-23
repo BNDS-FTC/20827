@@ -193,7 +193,7 @@ public class PYZMecanumDrive extends MecanumDrive {
    public boolean isBusy() {
       if (simpleMoveIsActivate) {
          Pose2d err = getSimpleMovePosition().minus(getPoseEstimate());
-         return err.vec().norm() > simpleMoveTranslationTolerance || Math.abs(err.getHeading()) > simpleMoveRotationTolerance;
+         return err.vec().norm() > simpleMoveTranslationTolerance && Math.abs(err.getHeading()) > simpleMoveRotationTolerance;
       }
       return trajectorySequenceRunner.isBusy();
    }

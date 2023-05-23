@@ -29,7 +29,7 @@ public class XCYSuperStructure {
    public static int LIFT_HOLD =379;
    public static int LIFT_LOW = 170;
    public static int LIFT_MID = 780;
-   public static int LIFT_HIGH = 1380;
+   public static int LIFT_HIGH = 1430;
    public static int LIFT_SWITCH_DIFF = 100;
    public static int LIFT_ADD_PER_CONE = 53;
 //   public static int LIFT_INIT =
@@ -149,9 +149,10 @@ public class XCYSuperStructure {
    }
 
    public void toHighJunction() {
+      closeHand();
       liftLocation = 3;
       setLifterPosition(LIFT_HIGH, 1);
-      sleep_with_drive(200);
+      sleep_with_drive(380);
       switchSide(false);
    }
 
@@ -167,6 +168,7 @@ public class XCYSuperStructure {
    public void switchSide(boolean toFront) {
       if (toFront) {
          closeHand();
+         sleep_with_drive(100);
          setArm(ARM_FRONT);
          sleep_with_drive(70);
          setHandSpin(HAND_SPIN_FRONT);
@@ -174,6 +176,7 @@ public class XCYSuperStructure {
       } else {
          while (getLifterPos() < 0.6 * LIFT_LOW) drive_period.run();
          closeHand();
+         sleep_with_drive(100);
          setArm(ARM_BACK);
          sleep_with_drive(70);
          setHandSpin(HAND_SPIN_BACK);
@@ -191,6 +194,16 @@ public class XCYSuperStructure {
       sleep_with_drive(300);
       setHandSpin(HAND_SPIN_FRONT);
       setArm(ARM_MIDDLE);
+   }
+
+   public void verticalGrab(){
+      closeHand();
+      sleep_with_drive(250);
+      int target = (int)getLifterPos()+300;
+      setLifterPosition(target,1);
+      while (Math.abs(getLifterPos() - target) > LIFT_TOLERANCE && opMode.opModeIsActive()) {
+         drive_period.run();
+      }
    }
 
    public void openHand() {
