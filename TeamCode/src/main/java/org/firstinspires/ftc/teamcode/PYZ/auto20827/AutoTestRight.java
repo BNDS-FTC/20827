@@ -1,9 +1,11 @@
-package org.firstinspires.ftc.teamcode.PYZ;
+package org.firstinspires.ftc.teamcode.PYZ.auto20827;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.PYZ.auto20827.AutoMaster;
+
 @Autonomous
-public class AutoTestRight extends AutoMaster{
+public class AutoTestRight extends AutoMaster {
 
    int i=5;
    @Override

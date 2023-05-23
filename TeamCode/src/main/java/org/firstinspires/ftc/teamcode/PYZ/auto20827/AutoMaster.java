@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode.PYZ;
+package org.firstinspires.ftc.teamcode.PYZ.auto20827;
 
 import static org.firstinspires.ftc.teamcode.PYZ.PYZConfigurations.*;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,6 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.PYZ.PYZMecanumDrive;
+import org.firstinspires.ftc.teamcode.PYZ.XCYSuperStructure;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -40,7 +41,7 @@ public abstract class AutoMaster extends LinearOpMode {
 
     public static double x_axis = 1300, side_eject_y = 224;
 
-    public static double right_high_y = 770, right_high_x = 1510, right_high_heading = 135;
+    public static double right_high_y = 770, right_high_x = 1500, right_high_heading = 135;
 
     public static double itm_pos_X = 1360, itm_pos_y = 900, itm_pos_heading = 93;
 
@@ -129,8 +130,8 @@ public abstract class AutoMaster extends LinearOpMode {
         } else if (firstJunctionPos == Junction.RIGHT) {
             startToEject = drive.trajectoryBuilder(startPos, true)
                     .splineToLinearHeading(new Pose2d(800, 900 * startSide, Math.toRadians(180) * startSide), 0)
-                    .addDisplacementMarker(()->upper.toHighJunction())
                     .splineToSplineHeading(RIGHT_POS, AngleUnit.normalizeRadians(RIGHT_POS.getHeading() - Math.PI))
+                    .addDisplacementMarker(()->upper.toHighJunction())
                     .build();
         } else {
             startToEject = drive.trajectoryBuilder(startPos)
@@ -179,7 +180,7 @@ public abstract class AutoMaster extends LinearOpMode {
         } else if (firstJunctionPos == Junction.RIGHT) {
             drive.waitForIdle();
 //            drive.initSimpleMove(RIGHT_POS);
-            drive.initSimpleMove(new Pose2d(x_axis,RIGHT_POS.getY(),Math.toRadians(90)*startSide));
+            drive.initSimpleMove(new Pose2d(x_axis,RIGHT_POS.getY(),Math.toRadians(180)*startSide));
             while (Math.abs(drive.getPoseEstimate().getX())<1000){
                 drive.update();
             }
