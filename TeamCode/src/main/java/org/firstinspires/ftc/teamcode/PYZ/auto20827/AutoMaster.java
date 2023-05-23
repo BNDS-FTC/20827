@@ -41,11 +41,12 @@ public abstract class AutoMaster extends LinearOpMode {
 
     public static double x_axis = 1300, side_eject_y = 224;
 
-    public static double right_high_y = 770, right_high_x = 1500, right_high_heading = 135;
+    public static double right_high_y , right_high_x = 1500, right_high_heading = 135;
 
     public static double itm_pos_X = 1360, itm_pos_y = 900, itm_pos_heading = 93;
 
     public static double grab_pos_y = 1417;
+    public  static double SB;
 
     private PYZMecanumDrive drive;
     private XCYSuperStructure upper;
@@ -89,6 +90,15 @@ public abstract class AutoMaster extends LinearOpMode {
             public void onError(int errorCode) {
             }
         });
+        if(startSide==LEFT){
+            right_high_y=665;
+//            SB=100;
+        }
+        else{
+            right_high_y=770;
+//            SB=300;
+        }
+        SB=300;
         MIDDLE_POS = new Pose2d(1200, side_eject_y * startSide, Math.toRadians(63) * startSide);
 
         GRAB_POS = new Pose2d(itm_pos_X, grab_pos_y * startSide, Math.toRadians(itm_pos_heading) * startSide); //TODO
@@ -211,10 +221,11 @@ public abstract class AutoMaster extends LinearOpMode {
             drive.waitForIdle();
         } else if (lastJunction == Junction.GRAB) {
             upper.closeHand();
-            drive.initSimpleMove(new Pose2d(x_axis,RIGHT_POS.getY(),Math.toRadians(-90)));
-            while (Math.abs(drive.getPoseEstimate().getY()-1000*startSide)>300){
+            drive.initSimpleMove(new Pose2d(x_axis,RIGHT_POS.getY(),Math.toRadians(90*startSide)));
+            while (Math.abs(drive.getPoseEstimate().getY()*startSide-1000)>SB){
                 drive.update();
             }
+//            while(Math.abs((drive.getPoseEstimate().getY()-)))
             drive.initSimpleMove(RIGHT_POS);
             upper.toHighJunction();
             drive.waitForIdle();
